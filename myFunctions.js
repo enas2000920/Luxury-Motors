@@ -10,7 +10,7 @@ function toggleDetails(checkboxId, detailsId) {
 
 $(document).ready(function () {
 
-    // معالجة إرسال نموذج الحجز
+    // معالجة نموذج الحجز
     $("#bookingForm").on("submit", function (e) {
         e.preventDefault();
 
@@ -45,28 +45,24 @@ $(document).ready(function () {
             return;
         }
 
-        // التحقق من التواريخ وحساب مدة التأجير
+        // التحقق من التواريخ
         var start = Date.parse(startDate + "T00:00:00Z");
         var end = Date.parse(endDate + "T00:00:00Z");
 
-        if (
-            isNaN(start) ||
-            isNaN(end) ||
-            end <= start
-        ) {
+        if (isNaN(start) || isNaN(end) || end <= start) {
             alert("تاريخ نهاية التأجير يجب أن يكون بعد تاريخ البداية.");
             return;
         }
 
         var days = (end - start) / 86400000;
 
-        // التحقق من رقم الموبايل السوري
+        // التحقق من رقم الموبايل
         if (!/^09[0-9]{8}$/.test(mobile)) {
-            alert("يرجى إدخال رقم موبايل صحيح.");
+            alert("يرجى إدخال رقم موبايل سوري صحيح.");
             return;
         }
 
-        // التحقق من البريد الإلكتروني عند إدخاله
+        // التحقق من البريد الإلكتروني
         if (
             email !== "" &&
             !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -75,7 +71,7 @@ $(document).ready(function () {
             return;
         }
 
-        // الاحتفاظ بالسيارات المحددة
+        // السيارات المختارة
         var selectedCars = $('input[name="selectCar"]:checked');
 
         if (selectedCars.length === 0) {
@@ -95,10 +91,11 @@ $(document).ready(function () {
         var total = 0;
         var result = "تم الحجز بنجاح!\n";
         result += "الاسم: " + fullName + "\n";
-        result += "عدد أيام التأجير: " + days + "\n\n";
+        result += "مدة التأجير: " + days + " أيام\n\n";
 
-        // حساب تكلفة كل سيارة مختارة
+        // حساب تكلفة كل سيارة
         selectedCars.each(function () {
+
             var carCode = $(this).val();
             var price = prices[carCode];
 
@@ -108,28 +105,39 @@ $(document).ready(function () {
 
             var carTotal = price * days;
 
-            result += carCode + ": " +
-                carTotal.toLocaleString("en-US") + " ل.س\n";
+            result += "السيارة: " + carCode + "\n";
+            result += "السعر اليومي: " +
+                price.toLocaleString("en-US") + " ل.س\n";
+            result += "عدد الأيام: " + days + "\n";
+            result += "تكلفة السيارة: " +
+                carTotal.toLocaleString("en-US") + " ل.س\n\n";
 
             total += carTotal;
         });
 
         // حساب الخصم
-        if (days > 7) {
-            var discount = total * 0.10;
-            total = total - discount;
+        var discount = 0;
 
-            result += "\nتم تطبيق خصم 10%.\n";
+        if (days > 7) {
+            discount = total * 0.10;
         }
 
-        // عرض المبلغ النهائي
-        result += "\nالمبلغ الإجمالي: " +
-            total.toLocaleString("en-US") + " ل.س";
+        var finalTotal = total - discount;
 
-        // إظهار النتيجة داخل الصفحة
+        // عرض تفاصيل المبلغ
+        result += "المجموع قبل الخصم: " +
+            total.toLocaleString("en-US") + " ل.س\n";
+
+        result += "قيمة الخصم: " +
+            discount.toLocaleString("en-US") + " ل.س\n";
+
+        result += "المبلغ النهائي: " +
+            finalTotal.toLocaleString("en-US") + " ل.س";
+
+        // عرض النتيجة داخل الصفحة
         $("#bookingResult").text(result);
 
-        // إظهار رسالة واحدة فقط
+        // عرض رسالة الحجز
         alert(result);
     });
 
